@@ -15,7 +15,18 @@
 - 主要风险不在“后端是否有能力”，而在“全仓可交付性与一致性”：
   - 前端仍为占位，项目级最小闭环在全仓维度不可用。
   - 文档存在自相矛盾描述，会误导排期与验收。
-  - 部分关键链路仍有并发与可运维性风险（对话确认并发写覆盖、迁移依赖人工步骤、成本指标口径未打通）。
+  - 剩余主要风险集中在可交付性与可运维性（前端闭环缺失、CI 质量闸门缺失、token 成本口径未打通）。
+
+## 2.1 本次修复进展（增量）
+
+- 已完成：Prompt 配置-能力映射类型化。
+  - `PromptConfig` 从 `map[string]string` 收敛为显式字段，并启用 YAML unknown field 校验。
+  - `PromptStore` 与业务用例改为按 `PromptCapability` 访问模板，移除散落字符串键。
+- 已完成：对话确认（`conversation confirm`）并发一致性增强。
+  - 在 `postgres` 运行态下，Confirm 流程已通过事务执行目标写回与会话清理，避免“目标已写回但会话未更新”的部分成功。
+  - 保持现有 API 语义不变：无 `pending_suggestion` 仍返回 `invalid_input`。
+- 已完成：当前稿确认与对话确认并发策略口径对齐。
+  - 两者均保持 optimistic locking 冲突语义；其中 conversation confirm 额外提供跨聚合原子提交保证。
 
 ## 3. Findings（按严重级别）
 
@@ -56,15 +67,15 @@
 - 建议修复：
   - 从 LLM 响应接入真实 usage（prompt/completion/total token）并回填 `GenerationRecord` 与 metric。
 
-## 4. 《开发优先级.md》1-8 项对照结论
+## 4.对照结论
 
 | 项 | 文档结论 | 代码核验 | 审查结论 | 注记 |
 |---|---|---|---|---|
 | 1 领域模型与存储边界 | 已完成 | 有 | 成立 | 无阻断 |
 | 2 项目/资产 API | 已完成 | 有 | 成立 | 无阻断 |
-| 3 LLM 客户端 + Prompt | 已完成 | 有 | 基本成立 | `asset_generation` 配置-能力映射不清 |
-| 4 对话微调 | 已完成 | 有 | 基本成立 | Confirm 并发一致性风险 |
+| 3 LLM 客户端 + Prompt | 已完成 | 有 | 成立 | Prompt 能力映射已类型化并收敛 |
+| 4 对话微调 | 已完成 | 有 | 成立 | Confirm 已引入事务原子提交（postgres） |
 | 5 章节生成主链路 | 已完成 | 有 | 成立 | rewrite 参数处理一致性待修 |
-| 6 当前稿确认 | 已完成 | 有 | 成立 | 与 conversation confirm 的并发策略不一致 |
+| 6 当前稿确认 | 已完成 | 有 | 成立 | 与 conversation confirm 并发口径已对齐（CAS，且 conversation 提供跨聚合原子性） |
 | 7 埋点与可观测性 | 已完成 | 有 | 部分成立 | token 成本口径未打通 |
 | 8 测试与回归 | 已完成 | 有 | 基本成立 | 缺 CI 自动闸门 |
