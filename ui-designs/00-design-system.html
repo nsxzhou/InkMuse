@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>设计系统 — InkMuse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            background: '#FAFAFA',
+            foreground: '#0F172A',
+            muted: '#F1F5F9',
+            'muted-foreground': '#64748B',
+            border: '#E2E8F0',
+            card: '#FFFFFF',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background-color: #FAFAFA; color: #0F172A; }
+    .btn-primary { background-color: #0F172A; color: white; transition: all 150ms ease; }
+    .btn-primary:hover { background-color: #1E293B; }
+    .btn-secondary { background-color: transparent; border: 1px solid #E2E8F0; color: #0F172A; transition: all 150ms ease; }
+    .btn-secondary:hover { background-color: #F1F5F9; }
+    .btn-ghost { background-color: transparent; color: #0F172A; transition: all 150ms ease; }
+    .btn-ghost:hover { background-color: #F1F5F9; }
+    input[type="text"]:focus, textarea:focus { border-color: #0F172A; outline: none; }
+    .swatch { width: 100%; aspect-ratio: 1; border-radius: 0.5rem; border: 1px solid #E2E8F0; }
+    .card-hover { transition: all 150ms ease; }
+    .card-hover:hover { background-color: #F8FAFC; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="py-6 px-8 border-b border-[#E2E8F0]">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <a href="01-homepage.html" class="flex items-center gap-2">
+        <i data-lucide="pen-tool" class="w-5 h-5 text-gray-900"></i>
+        <span class="text-lg font-medium tracking-tight">InkMuse</span>
+      </a>
+      <span class="text-xs text-[#64748B]">Design System — scheme-05-minimal</span>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto py-12 px-8">
+
+    <!-- 1. Color Palette -->
+    <section>
+      <h2 class="text-2xl font-light mb-8 tracking-tight">色彩</h2>
+      <div class="grid grid-cols-6 gap-4 mb-4">
+        <div>
+          <div class="swatch" style="background-color: #FAFAFA;"></div>
+          <p class="text-xs font-medium mt-2">background</p>
+          <p class="text-xs text-[#64748B]">#FAFAFA</p>
+        </div>
+        <div>
+          <div class="swatch" style="background-color: #0F172A;"></div>
+          <p class="text-xs font-medium mt-2">foreground</p>
+          <p class="text-xs text-[#64748B]">#0F172A</p>
+        </div>
+        <div>
+          <div class="swatch" style="background-color: #F1F5F9;"></div>
+          <p class="text-xs font-medium mt-2">muted</p>
+          <p class="text-xs text-[#64748B]">#F1F5F9</p>
+        </div>
+        <div>
+          <div class="swatch" style="background-color: #64748B;"></div>
+          <p class="text-xs font-medium mt-2">muted-foreground</p>
+          <p class="text-xs text-[#64748B]">#64748B</p>
+        </div>
+        <div>
+          <div class="swatch" style="background-color: #E2E8F0;"></div>
+          <p class="text-xs font-medium mt-2">border</p>
+          <p class="text-xs text-[#64748B]">#E2E8F0</p>
+        </div>
+        <div>
+          <div class="swatch" style="background-color: #FFFFFF;"></div>
+          <p class="text-xs font-medium mt-2">card</p>
+          <p class="text-xs text-[#64748B]">#FFFFFF</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Typography -->
+    <section class="mt-16">
+      <h2 class="text-2xl font-light mb-8 tracking-tight">字体排版</h2>
+      <div class="space-y-6 bg-white border border-[#E2E8F0] rounded-lg p-8">
+        <div>
+          <p class="text-xs text-[#64748B] mb-1">text-4xl font-light tracking-tight</p>
+          <p class="text-4xl font-light tracking-tight">大标题示例 Heading</p>
+        </div>
+        <div class="border-t border-[#E2E8F0] pt-6">
+          <p class="text-xs text-[#64748B] mb-1">text-3xl font-light</p>
+          <p class="text-3xl font-light">二级标题 Subheading</p>
+        </div>
+        <div class="border-t border-[#E2E8F0] pt-6">
+          <p class="text-xs text-[#64748B] mb-1">text-2xl font-light</p>
+          <p class="text-2xl font-light">三级标题 Section Title</p>
+        </div>
+        <div class="border-t border-[#E2E8F0] pt-6">
+          <p class="text-xs text-[#64748B] mb-1">text-lg font-medium</p>
+          <p class="text-lg font-medium">小标题 Small Heading</p>
+        </div>
+        <div class="border-t border-[#E2E8F0] pt-6">
+          <p class="text-xs text-[#64748B] mb-1">text-sm (14px) — 正文</p>
+          <p class="text-sm">这是正文文字示例。InkMuse 是一款面向创作者的 AI 写作工具，帮助你将灵感转化为完整的故事。</p>
+        </div>
+        <div class="border-t border-[#E2E8F0] pt-6">
+          <p class="text-xs text-[#64748B] mb-1">text-lg leading-loose (18px) — 长文本 / 写作内容</p>
+          <p class="text-lg leading-loose">飞船的观测舱里一片寂静。艾伦·雷德利站在巨大的舷窗前，目光穿过厚厚的防辐射玻璃，凝视着远方那颗未知的星球。它的表面覆盖着一层淡紫色的大气层，在恒星的照耀下闪烁着诡异的光芒。</p>
+        </div>
+        <div class="border-t border-[#E2E8F0] pt-6">
+          <p class="text-xs text-[#64748B] mb-1">text-xs text-muted-foreground — 标签</p>
+          <p class="text-xs text-[#64748B]">标签文字 · 次级信息 · 时间戳</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Buttons -->
+    <section class="mt-16">
+      <h2 class="text-2xl font-light mb-8 tracking-tight">按钮</h2>
+      <div class="bg-white border border-[#E2E8F0] rounded-lg p-8">
+        <div class="flex items-center gap-4 mb-6">
+          <button class="btn-primary px-6 py-2.5 rounded-lg text-sm">Primary</button>
+          <button class="btn-secondary px-6 py-2.5 rounded-lg text-sm">Secondary</button>
+          <button class="btn-ghost px-6 py-2.5 rounded-lg text-sm">Ghost</button>
+        </div>
+        <div class="flex items-center gap-4 mb-6">
+          <button class="btn-primary px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            新建项目
+          </button>
+          <button class="btn-secondary px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+            编辑
+          </button>
+          <button class="btn-ghost px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            删除
+          </button>
+        </div>
+        <div class="flex items-center gap-4">
+          <button class="btn-primary px-6 py-2.5 rounded-lg text-sm opacity-50 cursor-not-allowed">Disabled</button>
+          <button class="btn-secondary px-6 py-2.5 rounded-lg text-sm opacity-50 cursor-not-allowed">Disabled</button>
+        </div>
+        <p class="text-xs text-[#64748B] mt-4">所有过渡 150ms ease，无阴影、无 scale、无 translateY</p>
+      </div>
+    </section>
+
+    <!-- 4. Status Badges -->
+    <section class="mt-16">
+      <h2 class="text-2xl font-light mb-8 tracking-tight">状态徽章</h2>
+      <div class="bg-white border border-[#E2E8F0] rounded-lg p-8">
+        <div class="flex items-center gap-4 flex-wrap">
+          <span class="px-2.5 py-1 rounded-full text-xs bg-[#F1F5F9] text-[#64748B]">草稿</span>
+          <span class="px-2.5 py-1 rounded-full text-xs bg-emerald-50 text-emerald-600">进行中</span>
+          <span class="px-2.5 py-1 rounded-full text-xs bg-stone-100 text-stone-500">已归档</span>
+          <span class="px-2.5 py-1 rounded-full text-xs bg-amber-50 text-amber-600">章节草稿</span>
+          <span class="px-2.5 py-1 rounded-full text-xs bg-emerald-50 text-emerald-600">已确认</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Cards -->
+    <section class="mt-16">
+      <h2 class="text-2xl font-light mb-8 tracking-tight">卡片</h2>
+      <div class="grid grid-cols-3 gap-4">
+        <!-- Basic card -->
+        <div class="bg-white border border-[#E2E8F0] rounded-lg p-6">
+          <p class="text-xs text-[#64748B] mb-1">基础卡片</p>
+          <p class="text-sm">bg-white border rounded-lg p-6</p>
+        </div>
+        <!-- Hover card -->
+        <div class="card-hover bg-white border border-[#E2E8F0] rounded-lg p-6 cursor-pointer">
+          <p class="text-xs text-[#64748B] mb-1">可点击卡片</p>
+          <p class="text-sm">hover 时背景变为 #F8FAFC</p>
+        </div>
+        <!-- Stat card -->
+        <div class="bg-white border border-[#E2E8F0] rounded-lg p-6 text-center">
+          <p class="text-3xl font-light">42</p>
+          <p class="text-xs text-[#64748B] mt-1">统计数字</p>
+        </div>
+      </div>
+
+      <!-- Project card -->
+      <div class="mt-4">
+        <div class="card-hover bg-white border border-[#E2E8F0] rounded-lg p-4 cursor-pointer max-w-sm">
+          <h3 class="text-sm font-medium mb-1">星际穿越者</h3>
+          <p class="text-xs text-[#64748B] line-clamp-2 mb-3">在2157年，人类已经掌握了虫洞穿越技术，一支由各领域顶尖科学家组成的探索队被派往银河系边缘...</p>
+          <div class="flex items-center justify-between text-xs text-[#64748B]">
+            <span>9 章 · 18,400 字</span>
+            <span>1 小时前</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Form Inputs -->
+    <section class="mt-16">
+      <h2 class="text-2xl font-light mb-8 tracking-tight">表单</h2>
+      <div class="bg-white border border-[#E2E8F0] rounded-lg p-8 max-w-lg">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm text-gray-700 mb-2">文本输入</label>
+            <input type="text" class="w-full px-4 py-3 border border-[#E2E8F0] rounded-lg text-sm" placeholder="请输入文本...">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-2">文本域</label>
+            <textarea class="w-full px-4 py-3 border border-[#E2E8F0] rounded-lg text-sm resize-none" rows="3" placeholder="请输入内容..."></textarea>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-2">下拉选择</label>
+            <select class="w-full px-3 py-2 border border-[#E2E8F0] rounded-md text-sm focus:outline-none focus:border-[#0F172A]">
+              <option>选项一</option>
+              <option>选项二</option>
+              <option>选项三</option>
+            </select>
+          </div>
+          <div>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 border-gray-300 rounded" checked>
+              <span class="text-sm text-gray-700">复选框选项</span>
+            </label>
+          </div>
+        </div>
+        <p class="text-xs text-[#64748B] mt-4">Focus 时边框变为 #0F172A，outline: none</p>
+      </div>
+    </section>
+
+    <!-- 7. Navigation Components -->
+    <section class="mt-16">
+      <h2 class="text-2xl font-light mb-8 tracking-tight">导航</h2>
+      <div class="space-y-6">
+        <!-- Header bar -->
+        <div class="bg-white border border-[#E2E8F0] rounded-lg p-4">
+          <p class="text-xs text-[#64748B] mb-3">顶部导航栏</p>
+          <div class="flex items-center justify-between py-2">
+            <div class="flex items-center gap-2">
+              <i data-lucide="pen-tool" class="w-5 h-5 text-gray-900"></i>
+              <span class="text-lg font-medium tracking-tight">InkMuse</span>
+            </div>
+            <nav class="flex items-center gap-8">
+              <a href="#" class="text-sm text-gray-900">仪表盘</a>
+              <a href="#" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">设置</a>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Tab navigation -->
+        <div class="bg-white border border-[#E2E8F0] rounded-lg p-4">
+          <p class="text-xs text-[#64748B] mb-3">Tab 导航 (下划线风格)</p>
+          <div class="flex items-center gap-6 border-b border-[#E2E8F0]">
+            <button class="pb-3 border-b-2 border-[#0F172A] text-sm font-medium text-[#0F172A]">概览</button>
+            <button class="pb-3 border-b-2 border-transparent text-sm text-[#64748B] hover:text-[#0F172A] transition-colors">设定工坊</button>
+            <button class="pb-3 border-b-2 border-transparent text-sm text-[#64748B] hover:text-[#0F172A] transition-colors">章节</button>
+          </div>
+        </div>
+
+        <!-- Breadcrumb -->
+        <div class="bg-white border border-[#E2E8F0] rounded-lg p-4">
+          <p class="text-xs text-[#64748B] mb-3">面包屑</p>
+          <div class="flex items-center gap-1 text-xs text-[#64748B]">
+            <a href="#" class="hover:text-[#0F172A] transition-colors">项目</a>
+            <span>›</span>
+            <a href="#" class="hover:text-[#0F172A] transition-colors">星际穿越者</a>
+            <span>›</span>
+            <span class="text-[#0F172A]">第九章</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Icons Reference -->
+    <section class="mt-16">
+      <h2 class="text-2xl font-light mb-8 tracking-tight">图标 (Lucide)</h2>
+      <div class="bg-white border border-[#E2E8F0] rounded-lg p-8">
+        <div class="grid grid-cols-9 gap-6">
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="pen-tool" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">pen-tool</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="plus" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">plus</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">settings</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">arrow-left</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="edit-3" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">edit-3</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">trash-2</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">book-open</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">file-text</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="folder" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">folder</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="globe" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">globe</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="check" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">check</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">x</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="bold" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">bold</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="italic" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">italic</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="list" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">list</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">sparkles</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="send" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">send</p>
+          </div>
+          <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg bg-[#F1F5F9]">
+              <i data-lucide="save" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-[#64748B]">save</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Interaction States -->
+    <section class="mt-16 mb-16">
+      <h2 class="text-2xl font-light mb-8 tracking-tight">交互原则</h2>
+      <div class="bg-white border border-[#E2E8F0] rounded-lg p-8">
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-2">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>
+            <span>hover 仅改变背景色（极浅灰 #F8FAFC 或 #F1F5F9），150ms ease</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="x" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+            <span>无 box-shadow（任何元素）</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="x" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+            <span>无 transform: scale()（任何元素）</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="x" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+            <span>无 transform: translateY()（hover 效果）</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="x" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+            <span>无渐变背景（按钮、卡片等）</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>
+            <span>Focus 状态: border-color 变为 #0F172A，outline: none</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>
+            <span>所有 transition: all 150ms ease</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

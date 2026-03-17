@@ -1,112 +1,81 @@
-# InkMuse
+﻿# InkMuse
 
-InkMuse 是一个开源、可扩展、可自部署的 AI 小说创作平台。
+InkMuse 是一个开源的 AI 小说创作平台，提供从灵感构思到章节生成的完整创作流程。
 
-当前仓库是 **父仓库**，用于管理项目文档、整体结构和前后端子模块。V1 目标聚焦在“灵感 -> 项目创建 -> 设定/大纲 -> 单章草稿 -> 当前稿确认”的最小闭环。
-
-## 相关文档
-
-- 产品规划：`inkmuse-product-plan.md`
-- 开发优先级：`开发优先级.md`
-- 运行文档：`运行文档.md`
+核心流程：**灵感对话 → 项目创建 → 设定/大纲管理 → AI 章节生成 → 编辑/改写 → 确认定稿**。
 
 ## 仓库结构
 
+本仓库为父仓库，通过 Git submodule 管理前后端子仓库。
+
 ```text
 InkMuse/
-├── backend/                     # 后端子模块：inkmuse-backend
-├── frontend/                    # 前端子模块：inkmuse-frontend
-├── inkmuse-product-plan.md   # 产品规划
-├── 开发优先级.md                # 开发优先级
-└── .gitmodules                  # 子模块配置
+├── backend/                 # 后端子模块 — Go + Hertz + PostgreSQL
+├── frontend/                # 前端子模块 — React + TypeScript + Tailwind CSS
+├── ui-designs/              # 产品原型图（scheme-05-minimal 风格，HTML）
+├── inkmuse-product-plan.md  # 产品规划
+├── 运行文档.md               # 运行文档
+└── .gitmodules
 ```
 
-### 子仓库说明
+### 前端
 
-- `backend/`：独立 Git 仓库，当前已完成 Hertz + Eino 后端基础设施、项目/资产 API、Project / Asset 对话微调、章节生成 / 当前稿确认 / 续写 / 局部重写 HTTP API、GenerationRecord 持久化，以及 OpenAI 兼容 LLM 客户端与 Prompt 模板基础设施
-- `frontend/`：独立 Git 仓库，采用侧边栏 + 工作区布局，已完成灵感对话创建项目、资产 CRUD 与 AI 生成、项目/资产对话微调确认写回、章节生成/续写/局部改写/当前稿确认
+React 18 + Vite + TanStack Query + Tiptap 富文本编辑器。采用 scheme-05-minimal 极简设计（冷灰色调、纯 Inter 字体、无阴影渐变）。
 
-## 克隆项目
+主要功能：
+- 项目仪表盘（统计卡片 + 看板视图）
+- 灵感对话创建项目
+- 设定工坊（资产 CRUD + AI 生成 + 结构化表单）
+- 章节编辑（Tiptap 编辑器 + AI 续写/改写/Ghost Text）
+- Prompt 模板管理、LLM Provider 配置
+- 项目导出（Markdown / 纯文本）
 
-首次克隆请带上子模块：
+### 后端
+
+Go + Hertz HTTP 框架 + PostgreSQL。DDD 分层架构（领域层 / 服务层 / 存储层）。
+
+主要功能：
+- 项目、资产、章节 CRUD
+- AI 生成/续写/改写（SSE 流式输出）
+- OpenAI 兼容 LLM 客户端（支持多 Provider）
+- Prompt 模板管理（编译内嵌 + 项目级覆盖）
+- 指标采集（操作耗时、成功/失败事件）
+
+## 克隆
 
 ```bash
 git clone --recurse-submodules https://github.com/nsxzhou/inkmuse.git
 cd inkmuse
 ```
 
-如果已经普通克隆过父仓库，再执行：
+已克隆但缺少子模块时：
 
 ```bash
 git submodule update --init --recursive
 ```
 
-## 更新项目
+## 开发流程
 
-拉取父仓库最新内容后，同步子模块到父仓库记录的版本：
-
-```bash
-git pull
-git submodule update --init --recursive
-```
-
-## 日常开发流程
-
-### 开发后端
-
-先在后端子仓库内提交：
+子模块独立提交，父仓库跟踪版本指针：
 
 ```bash
-cd backend
-git pull
-git add .
-git commit -m "..."
-git push
-```
+# 在子仓库内开发并提交
+cd frontend  # 或 backend
+git add . && git commit -m "..." && git push
 
-再回到父仓库，提交子模块指针更新：
-
-```bash
+# 回到父仓库更新子模块指针
 cd ..
-git add backend
-git commit -m "chore: bump backend submodule"
-git push
+git add frontend && git commit -m "chore: bump frontend submodule" && git push
 ```
 
-### 开发前端
-
-先在前端子仓库内提交：
+拉取最新代码后同步子模块：
 
 ```bash
-cd frontend
-git pull
-git add .
-git commit -m "..."
-git push
-```
-
-再回到父仓库，提交子模块指针更新：
-
-```bash
-cd ..
-git add frontend
-git commit -m "chore: bump frontend submodule"
-git push
-```
-
-## 子模块注意事项
-
-- `backend/` 和 `frontend/` 是 **submodule**，不是父仓库里的普通源码目录
-- 修改前后端代码时，应先在各自子仓库提交并推送
-- 父仓库提交的是子模块版本指针，而不是子仓库内部源码变更
-- 如果拉取了父仓库的新提交，记得执行：
-
-```bash
-git submodule update --init --recursive
+git pull && git submodule update --init --recursive
 ```
 
 ## 远程仓库
 
 - 父仓库：<https://github.com/nsxzhou/inkmuse>
-- 后端仓库：<https://github.com/nsxzhou/inkmuse-backend>
-- 前端仓库：<https://github.com/nsxzhou/inkmuse-frontend>
+- 后端：<https://github.com/nsxzhou/inkmuse-backend>
+- 前端：<https://github.com/nsxzhou/inkmuse-frontend>
