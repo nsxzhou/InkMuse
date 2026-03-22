@@ -13,7 +13,6 @@ InkMuse/
 ├── backend/                 # 后端子模块 — Go + Hertz + PostgreSQL
 ├── frontend/                # 前端子模块 — React + TypeScript + Tailwind CSS
 ├── ui-designs/              # 产品原型图（scheme-05-minimal 风格，HTML）
-├── docs/                    # 契约审查、兼容层清单等项目文档
 ├── 运行文档.md               # 运行文档
 └── .gitmodules
 ```
@@ -29,7 +28,6 @@ React 18 + Vite + TanStack Query + Tiptap 富文本编辑器。采用 scheme-05-
 - 章节编辑（Tiptap 编辑器 + AI 续写/改写/Ghost Text + 未保存防误确认）
 - 章节质量评审（AI 多维度评分面板）
 - 记忆层（角色状态 + 时间线事件 + 关系图谱交互编辑）
-- 伏笔管理（时间线可视化 + CRUD）
 - 知识图谱（角色-地点-事件-物品关系网络力导向图可视化 + 同步构建）
 - 消痕润色（AI 文本风格优化 + SSE 流式 + 原文对比）
 - 视角过滤（POV 角色选择 + 上下文自动过滤）
@@ -48,7 +46,6 @@ Go + Hertz HTTP 框架 + PostgreSQL。DDD 分层架构（领域层 / 服务层 /
 - 消痕润色（AI 文本风格优化，SSE 流式）
 - 视角信息过滤（POV 角色上下文自动过滤）
 - 角色状态、时间线事件与章节后提取
-- 伏笔网络（埋设/回收状态追踪）
 - 因果链追踪（事件间因果关系映射）
 - 知识图谱（角色-地点-事件-物品关系网络 + 同步构建）
 - @DSL 上下文引用（Prompt 中 `@Character`/`@Event`/`@Chapter` 标签自动解析）
@@ -67,13 +64,11 @@ Go + Hertz HTTP 框架 + PostgreSQL。DDD 分层架构（领域层 / 服务层 /
   `character-states.relationships` 已是结构化数组 DTO。
   `GET /llm/providers` 返回 `api_key_masked`，写接口仍提交 `api_key`。
   前端默认关系类型和资产 schema 映射来自后端生成的 `frontend/src/shared/api/generated/contracts.ts`。
-- 路由与契约清单见 [backend/README.md](backend/README.md)、[frontend/README.md](frontend/README.md) 和 [docs/api-v1-contract-matrix.md](docs/api-v1-contract-matrix.md)。
+- 路由与契约清单见 [backend/README.md](backend/README.md)、[frontend/README.md](frontend/README.md)。
 
 ## 文档分层
 
 - 当前实现与运行方式：根 `README.md`、[运行文档](运行文档.md)、[backend/README.md](backend/README.md)、[frontend/README.md](frontend/README.md)
-- 契约与兼容层文档：[docs/api-v1-contract-matrix.md](docs/api-v1-contract-matrix.md)、[docs/compatibility-adapters-inventory.md](docs/compatibility-adapters-inventory.md)
-- 历史审查与排查记录：[docs/frontend-backend-schema-audit.md](docs/frontend-backend-schema-audit.md)
 
 ## 克隆
 
