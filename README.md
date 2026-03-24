@@ -71,8 +71,8 @@ Go + Hertz HTTP 框架 + PostgreSQL。DDD 分层架构（领域层 / 服务层 /
 ## 克隆
 
 ```bash
-git clone --recurse-submodules https://github.com/nsxzhou/inkmuse.git
-cd inkmuse
+git clone --recurse-submodules https://github.com/nsxzhou/InkMuse.git
+cd InkMuse
 ```
 
 已克隆但缺少子模块时：
@@ -103,6 +103,6 @@ git pull && git submodule update --init --recursive
 
 ## 远程仓库
 
-- 父仓库：<https://github.com/nsxzhou/inkmuse>
-- 后端：<https://github.com/nsxzhou/inkmuse-backend>
-- 前端：<https://github.com/nsxzhou/inkmuse-frontend>
+- 父仓库：<https://github.com/nsxzhou/InkMuse>
+- 后端：<https://github.com/nsxzhou/InkMuse-backend>
+- 前端：<https://github.com/nsxzhou/InkMuse-frontend>

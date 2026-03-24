@@ -1,6 +1,6 @@
 [submodule "backend"]
 	path = backend
-	url = https://github.com/nsxzhou/inkmuse-backend
+	url = https://github.com/nsxzhou/InkMuse-backend.git
 [submodule "frontend"]
 	path = frontend
-	url = https://github.com/nsxzhou/inkmuse-frontend
+	url = https://github.com/nsxzhou/InkMuse-frontend.git
