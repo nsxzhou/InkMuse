@@ -57,7 +57,7 @@ Go + Hertz HTTP 框架 + PostgreSQL。DDD 分层架构（领域层 / 服务层 /
 - 前端默认通过 `VITE_API_BASE_URL` 连接后端，开发环境默认值是 `http://127.0.0.1:8080/api/v1`。
 - 普通 JSON 接口统一走 `frontend/src/shared/api/http-client.ts` 的 `request()`；导出下载走同一客户端里的 `requestRaw()`。
 - 流式生成接口统一走 `frontend/src/shared/api/sse-client.ts`，使用 SSE 消费章节生成、续写、改写、灵感 brainstorm、资产生成等结果。
-- 非 `GET` JSON 请求默认携带 `X-User-ID` 作为本地用户标识；这不是鉴权系统，只用于本地单用户场景下的操作归属。
+- 非 `GET` JSON 请求默认携带 `X-Author-ID` 作为作者标记/确认人元数据；本项目是本地单用户应用，不提供 authn/authz。
 - 当前重要契约约定：
   `character-states.relationships` 已是结构化数组 DTO。
   `GET /llm/providers` 返回 `api_key_masked`，写接口仍提交 `api_key`。
