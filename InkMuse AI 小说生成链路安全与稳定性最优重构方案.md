@@ -11,29 +11,21 @@
 - extraction 会把模型产出的摘要、角色状态、时间线、scratchpad 直接提升为后续上下文，见  
   `backend/internal/service/extraction/service.go:257`
 - JSON repair retry 会把原始 prompt 再送回模型，见 `backend/internal/service/json_execution.go:259`
-- 当前 X-User-ID 只是请求头透传，不构成真实鉴权边界，见  
-  `backend/internal/infra/http/middleware/user_context.go:18` 和 `backend/README.md:50`
 
-最优方案不是分别采纳两份计划中的"最大集合"，而是明确 7 个架构决策：
+最优方案不是分别采纳两份计划中的"最大集合"，而是明确 6 个架构决策：
 
-1. 明确 X-User-ID 为"作者标记/确认人元数据"，本项目定位为本地单用户应用，不考虑 authn/authz
-2. 用统一 PromptEnvelope 重建 prompt 信任边界
-3. 用 PromptTraceManifest + PromptAuditSnapshot 重建 trace 与调试数据边界
-4. 用"按操作类型路由 provider"的方式重建模型选择与上下文预算
-5. 用 source_version + derivation_version + staged admission 重建记忆层、评审层与图谱同步
-6. 用"真实 POV 裁剪 + degraded_pov_mode"替代当前伪过滤
-7. 用"structured -> local repair -> single remote repair"替代当前高泄露 JSON 回退
+1. 用统一 PromptEnvelope 重建 prompt 信任边界
+2. 用 PromptTraceManifest + PromptAuditSnapshot 重建 trace 与调试数据边界
+3. 用"按操作类型路由 provider"的方式重建模型选择与上下文预算
+4. 用 source_version + derivation_version + staged admission 重建记忆层、评审层与图谱同步
+5. 用"真实 POV 裁剪 + degraded_pov_mode"替代当前伪过滤
+6. 用"structured -> local repair -> single remote repair"替代当前高泄露 JSON 回退
 
 交付按 1 后端 + 1 前端设计，采用 5 周主线 + 1 周缓冲。4 周不足以完成数据迁移、契约扩展、回归和性能收口。
 
 ## Key Changes
 
-### 1. 明确 X-User-ID 定位
-
-- X-User-ID 明确降级为"作者标记/确认人元数据"，不再在文档、代码注释或 UI 中暗示其具备身份认证意义
-- 本项目定位为本地单用户应用，不考虑 authn/authz
-
-### 2. 用 PromptEnvelope 重建动态 prompt 注入
+### 1. 用 PromptEnvelope 重建动态 prompt 注入
 
 新增统一 PromptEnvelope，固定 4 层：
 
@@ -47,7 +39,7 @@
 - promptbank 保留，但职责缩到"模块选择 + 规则片段模板"；上下文拼装全部迁移到 service 层的 envelope builder
 - 模板渲染改为严格模式：缺失变量直接失败；每个 capability 固定字段白名单，不再接受任意 `map[string]string` 的开放消费
 
-### 3. 引入 ContextSanitizer
+### 2. 引入 ContextSanitizer
 
 所有动态注入文本进入 prompt 前统一经过 ContextSanitizer。
 
@@ -61,7 +53,7 @@
 
 适用范围：chapter generation、continue、rewrite、review、summary、character_state_extraction、timeline_extraction、scratchpad_extract、brainstorm、asset generate/refine 全部复用同一 sanitizer。
 
-### 4. 重构 Prompt Trace、Generation Record 与调试数据
+### 3. 重构 Prompt Trace、Generation Record 与调试数据
 
 #### 新增前端可见 PromptTraceManifest
 
@@ -106,7 +98,7 @@
 
 前端 PromptTraceCard 仅展示 manifest，不再展示完整 system/user prompt。
 
-### 5. 重构 provider 路由与上下文预算
+### 4. 重构 provider 路由与上下文预算
 
 #### 新增 operation key 路由表
 
@@ -139,7 +131,7 @@
 
 上下文预算一律读取"本次实际被选中的 provider 的 context window"，不再从任意默认 provider 推断。
 
-### 6. 重构记忆层、提取链路与 KG
+### 5. 重构记忆层、提取链路与 KG
 
 #### 数据库变更
 
@@ -194,7 +186,7 @@
 - KG 同步只从 promoted 数据构建
 - 现有去抖调度保留，但增加 watchdog、重启恢复和 stale job 回收
 
-### 7. 修正 POV 设计
+### 6. 修正 POV 设计
 
 #### 新增字段
 
@@ -210,7 +202,7 @@
 
 README、后端说明、前端文案同步修正，不再把现有做法描述为"自动 POV 信息过滤"。
 
-### 8. 收紧 JSON 结构化输出回退
+### 7. 收紧 JSON 结构化输出回退
 
 固定顺序：
 
@@ -232,7 +224,7 @@ retry prompt 不再包含原始 system prompt、user prompt、章节正文、资
 - extraction 全部补显式 schema，禁止 schema 缺失下的宽松解码
 - `used_repair`、`retry_count`、`repair_stage` 进入 generation record 与指标
 
-### 9. 质量链路与确认门禁
+### 8. 质量链路与确认门禁
 
 #### 自动触发
 
@@ -256,7 +248,7 @@ retry prompt 不再包含原始 system prompt、user prompt、章节正文、资
 - `provider_failover_used`
 - `degraded_flags`
 
-### 10. 前端流式与可观测性收口
+### 9. 前端流式与可观测性收口
 
 #### 流式控制
 
@@ -367,7 +359,6 @@ prompt 装配时间、首 token 时间、review 耗时、derivation 耗时、con
 
 **后端**
 
-- X-User-ID 降级为元数据标记，清理文档和代码中的认证暗示
 - generation record 扩展
 - trace manifest
 - 日志脱敏
