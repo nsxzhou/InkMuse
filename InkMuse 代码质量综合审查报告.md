@@ -403,6 +403,27 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
 - service 层不再直接依赖 infra 类型，核心场景通过端口接口隔离。
 - 热点查询与轮询链路不再以“全量加载 + 高频轮询 + handler 侧全文缓存”为默认策略。
 
+### 完成产出
+
+- `LoadBootstrap` 已拆为 `initStorage / initLLM / initUseCases / initHTTP` 四段初始化流程，`bootstrap.go` 不再承担全部装配细节。
+- `ProjectHandler` 已拆为 CRUD 与 ideation/brainstorm 两组 handler，`ChapterHandler` 已拆为 query / write / stream / review 四组 handler，SSE 传输辅助逻辑改为复用 helper。
+- chapter/asset 列表链路已切到真实 summary DTO：章节列表与 `chapter-summaries` 分离查询，资产列表改为摘要列表，前端改为按需 `getAsset()` 拉详情。
+- `chapter` service 已引入本地 `llm / tx / extraction / kgSync / jsonExecutor` 端口接口，记忆新鲜度等待改为指数退避；`SSE` 全文累计已收回到 service-side stream execution。
+- asset 生成/优化上下文已改走 metadata-first 摘要列表，extraction 的已知角色名加载已切到 title-only 查询；`service/project_scope.go` 已抽出公共 project/chapter scope 校验 helper。
+
+### 验收结果
+
+- handler 已回到薄层：chapter/project 的 HTTP 入口只做绑定、use case 调用、响应映射，brainstorm 与章节流式编排不再直接堆在单个 handler 体内。
+- service 层已不再直接依赖 chapter 场景中的 concrete infra 类型；关键能力通过局部端口接口与通用 stream runner 隔离。
+- 热点查询和流式链路已不再默认全量正文：章节 summary 查询不再回传正文，资产列表不再回传 `content`，SSE helper 不再在 transport 层再聚合一份全文，记忆等待改为有上限的指数退避。
+
+### 完成状态
+
+- 状态：`已完成（2026-03-31）`
+- 后端验证：`go test ./...`、`go vet ./...`、`go run ./cmd/contractgen`
+- 前端验证：`npm run lint`、`npm run test`、`npm run build`
+- 验证结果：后端全量测试通过，`go vet` 通过，契约重新生成完成；前端 lint 通过，全量 `34` 个测试文件、`124` 个测试全部通过，前端构建通过。
+
 ### 纳入问题清单
 
 #### 高风险 / P0
@@ -413,6 +434,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: 分层 `initStorage/initLLM/initUseCases/initHTTP`  
    Refactor Priority: P0
+   完成情况：`LoadBootstrap()` 已收敛为配置/迁移后调用 `initStorage()`、`initLLM()`、`initUseCases()`、`initHTTP()` 的分阶段组合根，`bootstrap.go` 不再内联全部装配过程。
+   验证方式：`go test ./internal/app`、全量 `go test ./...`。
 
 2. **来源：架构审查 8**  
    Finding: `ChapterHandler` 承担 CRUD + AI 同步 + SSE + DTO 转换  
@@ -420,6 +443,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: 拆 `CRUD/Generation/Review/Stream handlers`  
    Refactor Priority: P1
+   完成情况：章节 HTTP 层已拆为 `chapter_query.go`、`chapter_write.go`、`chapter_stream.go`、`chapter_review.go` 四组处理器，主文件仅保留共享响应类型与 helper。
+   验证方式：`go test ./internal/infra/http/handler`、全量 `go test ./...`。
 
 3. **来源：架构审查 9**  
    Finding: `ProjectHandler` 混合 CRUD 与 brainstorming/guided AI  
@@ -427,6 +452,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: 拆 `ProjectIdeationHandler`  
    Refactor Priority: P1
+   完成情况：项目 HTTP 层已拆为 `project_crud.go` 与 `project_ideation.go`，brainstorm SSE 编排进一步下沉到 `project_brainstorm_stream.go`。
+   验证方式：`go test ./internal/infra/http/handler`、全量 `go test ./...`。
 
 4. **来源：架构审查 10**  
    Finding: `chapter service` 对 infra 类型泄漏明显  
@@ -434,6 +461,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: 引入 service 层端口接口，infra 实现端口  
    Refactor Priority: P0
+   完成情况：chapter service 依赖已切为 `llmGateway / txExecutor / extractionRunner / kgSyncer / jsonExecutor` 等本地端口接口，不再直接以 concrete infra/service 类型编排主路径。
+   验证方式：`go test ./internal/service/chapter`、全量 `go test ./...`。
 
 5. **来源：架构审查 11**  
    Finding: `chapter use case` 依赖与职责膨胀（God UseCase）  
@@ -441,6 +470,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: 按 `query/mutation/generation/review` 拆用例  
    Refactor Priority: P0
+   完成情况：chapter 场景已按 `query / write / stream / review / context / extraction / update_tx` 等文件分治，`usecase.go` 收敛为组合与少量共用逻辑。
+   验证方式：`go test ./internal/service/chapter`、全量 `go test ./...`。
 
 6. **来源：性能优化审查 9**  
    Finding: 章节列表 SQL 返回 `content/summary` 大字段，列表 overfetch  
@@ -448,6 +479,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: `list/detail DTO` 分离  
    Refactor Priority: P0
+   完成情况：Postgres 与 memory 章节仓储均已新增 `ListListItemsByProject()`，`chapter-summaries` 走真实 summary DTO，不再通过完整章节列表映射。
+   验证方式：`go test ./internal/infra/storage/postgres ./internal/infra/http/handler`、全量 `go test ./...`。
 
 7. **来源：性能优化审查 10**  
    Finding: 资产列表 SQL 返回 `content/content_schema`，负载过重  
@@ -455,6 +488,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: `summary DTO + 详情按需取`  
    Refactor Priority: P0
+   完成情况：资产列表已改为 `AssetListItem` 摘要 DTO，仓储新增 `ListListItemsByProject` / `ListListItemsByProjectAndType` / `ListTitlesByProjectAndType`，前端改为在编辑/大纲解析时按需 `getAsset()` 拉详情。
+   验证方式：`go test ./internal/infra/storage/postgres ./internal/infra/http/handler`、`npm run test`、`npm run build`。
 
 8. **来源：性能优化审查 11**  
    Finding: 章节记忆新鲜度检查 `250ms` DB 轮询，最长 `30s`  
@@ -462,6 +497,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: 事件驱动或指数退避  
    Refactor Priority: P0
+   完成情况：`ensureChapterMemoryFresh()` 已改为 `500ms -> 1s -> 2s -> 4s -> 5s cap` 的指数退避等待，保留 `30s` 总超时与原有错误语义。
+   验证方式：`go test ./internal/service/chapter` 覆盖 `nextMemoryStalePollInterval`，并通过全量 `go test ./...`。
 
 9. **来源：性能优化审查 12**  
    Finding: 资产生成/优化前全量加载项目资产正文  
@@ -469,6 +506,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: SQL 层先裁剪 + metadata 优先  
    Refactor Priority: P0
+   完成情况：asset generate/refine 上下文已切到 `ListListItemsByProject()` + `BuildAssetListItemContextPack()`，只在 refine 目标详情上读取完整正文。
+   验证方式：`go test ./internal/service/asset` 中 metadata-first 回归测试，以及全量 `go test ./...`。
 
 10. **来源：性能优化审查 13**  
    Finding: SSE 写出链路把全文再聚合一份，长文本峰值内存放大  
@@ -476,6 +515,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 高  
    Recommendation: 降低 handler 侧全文缓存  
    Refactor Priority: P0
+    完成情况：`writeSSEStream()` 已退回纯传输层，不再在 handler 侧累计全文；全文与 token usage 累计已下沉到 `aiworkflow.StartStream()` 的 service-side proxy stream 中。
+    验证方式：`go test ./internal/service/aiworkflow ./internal/service/asset ./internal/service/chapter ./internal/infra/http/handler`、全量 `go test ./...`。
 
 11. **来源：设计模式评估 5**  
    Finding: `LoadBootstrap` 组合根膨胀  
@@ -484,6 +525,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Pattern Concern: `God Factory`  
    Recommendation: 模块化初始化  
    Refactor Priority: P0
+    完成情况：`bootstrap.go` 已引入 `appUseCases` 组合结构和 staged init helper，组合根不再直接内嵌所有构造细节。
+    验证方式：`go test ./internal/app`、全量 `go test ./...`。
 
 12. **来源：设计模式评估 7**  
    Finding: `ChapterHandler` 职责过载  
@@ -492,6 +535,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Pattern Concern: `God Handler`  
    Recommendation: `CRUD/Generation/Review` 拆分  
    Refactor Priority: P0
+    完成情况：chapter handler 已拆为 query / write / stream / review 子处理器，并保留原路由入口与行为不变。
+    验证方式：`go test ./internal/infra/http/handler`、全量 `go test ./...`。
 
 13. **来源：设计模式评估 9**  
    Finding: `chapter use case` 依赖 `18+` 且多协调器内聚在一个 struct  
@@ -500,6 +545,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Pattern Concern: `God UseCase`  
    Recommendation: 子场景分治 + 薄 Facade  
    Refactor Priority: P0
+    完成情况：chapter 用例当前通过场景化文件与局部端口接口组合，主入口依赖面已收窄，不再直接握住所有具体实现细节。
+    验证方式：`go test ./internal/service/chapter`、全量 `go test ./...`。
 
 14. **来源：设计模式评估 10**  
    Finding: `Brainstorm` 在 handler 层做并发编排  
@@ -508,6 +555,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Pattern Concern: `Transport Orchestration Leakage`  
    Recommendation: 下沉 stream adapter  
    Refactor Priority: P0
+    完成情况：brainstorm 的 goroutine/channel/SSE 写出已收敛到 `writeBrainstormStream()`，handler 本身只负责请求映射与 helper 调用。
+    验证方式：`go test ./internal/infra/http/handler`、全量 `go test ./...`。
 
 15. **来源：代码规范检查 12**  
    Finding: `LoadBootstrap` 超长且职责过载  
@@ -516,6 +565,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: `SRP/可读性`  
    Recommendation: 五段式拆分  
    Refactor Priority: P0
+    完成情况：`LoadBootstrap()` 已改为配置/迁移后串接 `initStorage()`、`initLLM()`、`initUseCases()`、`initHTTP()`，可读性与错误清理路径均已收束。
+    验证方式：`go test ./internal/app`、全量 `go test ./...`。
 
 16. **来源：代码规范检查 14**  
    Finding: `ExtractAfterGeneration` 为超长 orchestration  
@@ -524,6 +575,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: 函数复杂度控制  
    Recommendation: 分 `prepare/build/admit/promote`  
    Refactor Priority: P0
+    完成情况：提取链路当前按 `loadKnownCharacters / buildMemoryDerivation / admitMemoryDerivation / stageDerivationJob / promoteMemoryDerivation / markDerivationJobFailed` 分段执行，最新还将已知角色加载切到了 title-only 轻量查询。
+    验证方式：`go test ./internal/service/extraction`、全量 `go test ./...`。
 
 17. **来源：代码规范检查 15**  
    Finding: `Brainstorm handler` 并发/SSE 编排越界  
@@ -532,6 +585,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: handler 薄层原则  
    Recommendation: 抽 stream helper  
    Refactor Priority: P0
+    完成情况：brainstorm 流式事件写出已抽到独立 helper 文件，project ideation handler 只保留 request -> use case -> stream helper 的薄层装配。
+    验证方式：`go test ./internal/infra/http/handler`、全量 `go test ./...`。
 
 #### 中风险 / P1
 
@@ -541,6 +596,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 抽共用验证/查验 helper  
    Refactor Priority: P1
+   完成情况：已新增 `internal/service/project_scope.go`，并将 `characterstate / timeline / causallink` 中共用的 project/chapter scope 校验路径收敛到公共 helper。
+   验证方式：`go test ./internal/service ./internal/service/timeline ./internal/service/causallink`、全量 `go test ./...`。
 
 2. **来源：性能优化审查 14**  
    Finding: 提取服务只为角色名却加载全部角色正文  
@@ -548,6 +605,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 新增轻量 `title/id` 查询  
    Refactor Priority: P1
+   完成情况：`loadKnownCharacters()` 已改为调用 `ListTitlesByProjectAndType()`，不再为角色名聚合去读取完整角色正文。
+   验证方式：`go test ./internal/service/extraction` 中 `TestLoadKnownCharactersUsesTitleOnlyQuery`，以及全量 `go test ./...`。
 
 ## Phase 4｜后端装配层、路由与基础设施治理
 
