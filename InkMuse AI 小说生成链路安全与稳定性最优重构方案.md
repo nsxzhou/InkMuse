@@ -25,61 +25,6 @@
 
 ## Key Changes
 
-### 5. 重构记忆层、提取链路与 KG
-
-#### 数据库变更
-
-**chapters 新增**
-
-- `source_version`
-
-**新增 chapter_derivation_jobs 表**
-
-保存：
-
-- `chapter_id`
-- `source_version`
-- `derivation_version`
-- `status`
-- `summary_json`
-- `character_states_json`
-- `timeline_json`
-- `scratchpad_json`
-- `admission_report_json`
-- `started_at`
-- `completed_at`
-- `last_error`
-
-**character_states、timeline_events、scratchpad_facts 增加**
-
-- `source_version`
-- `derivation_version`
-
-**chapters.summary 增加**
-
-- `summary_source_version`
-- `summary_derivation_version`
-
-#### 读取与提升规则
-
-- 读取上下文时只读取"已提升 promoted"的记忆数据；staged 数据不得进入后续 generation
-- promotion 规则固定：
-  - summary 通过结构与语义校验即可自动提升
-  - character_states、timeline、scratchpad 先写 staged，再过 admission validator，全部通过才提升
-
-#### memory_stale 定义与处理
-
-- memory_stale 定义固定：章节当前 `source_version` 大于最新 promoted `derivation_version` 所对应版本
-- chapter generate/continue/rewrite/review 在装配上下文前检测 memory_stale：
-  - 优先等待最新 derivation 完成
-  - 超时则返回显式 `memory_stale` 错误
-  - 不再允许静默使用旧记忆继续生成
-
-#### KG 同步
-
-- KG 同步只从 promoted 数据构建
-- 现有去抖调度保留，但增加 watchdog、重启恢复和 stale job 回收
-
 ### 6. 修正 POV 设计
 
 #### 新增字段
