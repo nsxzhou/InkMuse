@@ -235,17 +235,24 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
 - 收敛轻量性能问题和低成本规范问题，避免这些债务在主路径重构后继续扩散。
 - 把前端共享层恢复为“复用能力集中、UI 页面少拼装”的稳定支点。
 
-### 预期产出
+### 完成产出
 
-- 统一的 query string/helper 与 stream endpoint 工厂。
-- 低价值类型别名、未使用依赖、局部 lint 压制和硬编码样式的清理方案。
-- SSE timeout policy、KG 过滤和局部算法热点的补丁级优化方向。
+- `shared/api` 已新增统一 `query-helpers`，`assets / projects / chapters` 的 query string 拼装已收敛到同一入口。
+- `shared/api/sse-client` 已新增 `createStreamEndpoint` 工厂，`assets` 与 `chapters` 中标准 schema-based SSE 包装已统一复用。
+- timeout policy 已改为客户端缓存并在 provider 新增、更新、删除后失效；低价值类型别名、未使用依赖、无理由 lint 压制和硬编码语义色值均已收口。
 
-### 验收标准
+### 验收结果
 
-- shared/api 中不再存在跨文件重复拼装 query string 和流式包装逻辑。
-- 低风险性能点得到收敛，不再存在明显无意义的额外 RTT 和局部 O(E×N) 过滤。
-- 局部规范例外都有明确去留结论，不再保留无理由压制或历史残留。
+- shared/api 中已不再跨文件重复拼装 query string，标准流式接口也不再散落重复 `streamRequestWithSchema(...)` 包装。
+- SSE timeout policy 不再为每次流式请求额外请求一次 `/llm/timeout-policy`；KG 边过滤和未写章节推导均已改为 `Set` 级查找。
+- 局部规范例外已完成处置：GhostText 存储读写具备最小类型约束，`useToast` lint 例外已补原因说明，写作页提示文案已切回语义 token。
+
+### 完成状态
+
+- 状态：`已完成（2026-03-31）`
+- 前端验证：`npm run lint`、`npm run test`、`npm run build`
+- 辅助核验：`xxd -g 1 -l 4 frontend/src/pages/project-workbench-page.tsx`
+- 验证结果：前端 lint 通过；全量 `34` 个测试文件、`123` 个测试全部通过；前端构建通过；`project-workbench-page.tsx` 文件头已确认不存在 `BOM`。
 
 ### 纳入问题清单
 
@@ -257,6 +264,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 抽 `buildQueryString/listRequest`  
    Refactor Priority: P1
+   完成情况：已新增 `frontend/src/shared/api/query-helpers.ts`，并将 `listAssets`、`listProjects`、`listChapters`、`listChapterSummaries` 的 query string 组装统一改为 `buildPathWithQuery(...)`。
+   验证方式：`npm run test -- src/shared/api/assets.test.ts src/shared/api/chapters.test.ts src/shared/api/projects.test.ts`，以及全量 `npm run test`。
 
 2. **来源：代码冗余检测 2**  
    Finding: 流式 API 包装函数同构重复  
@@ -264,6 +273,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 抽 `createStreamEndpoint` 工厂  
    Refactor Priority: P1
+   完成情况：已在 `shared/api/sse-client.ts` 中新增 `createStreamEndpoint`，并将 `assets` 与 `chapters` 中标准 schema-based stream wrapper 收敛到统一工厂；`brainstorm` 与 `polish` 仍保留定制事件解析路径。
+   验证方式：`src/shared/api/assets.test.ts`、`src/shared/api/chapters.test.ts` 校验工厂接线；全量 `npm run test`。
 
 3. **来源：性能优化审查 1**  
    Finding: 每次 SSE 先请求 timeout policy，固定额外 RTT  
@@ -271,6 +282,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 缓存 timeout policy + provider 更新时失效  
    Refactor Priority: P1
+   完成情况：`getTimeoutPolicy()` 已改为缓存 Promise，并在 `addProvider / updateProvider / deleteProvider` 成功后清空缓存；SSE 与 provider test 共用同一缓存结果。
+   验证方式：`src/shared/api/llm-providers.test.ts` 覆盖缓存命中与 provider 变更后失效场景；全量 `npm run test`。
 
 4. **来源：性能优化审查 6**  
    Finding: KG 边过滤 `O(E×N)`  
@@ -278,6 +291,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 预建可见节点 `Set/Map`  
    Refactor Priority: P1
+   完成情况：KG 图谱数据构建已先生成可见节点 `Set`，边过滤不再对每条 edge 重复执行 `nodes.some(...)`。
+   验证方式：`src/features/knowledge-graph/kg-graph.test.tsx` 与 `src/features/knowledge-graph/kg-panel.test.tsx`，以及全量 `npm run test`。
 
 5. **来源：代码规范检查 7**  
    Finding: `eslint-disable any` 无理由注释  
@@ -286,6 +301,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: `AGENTS 5.7`  
    Recommendation: 补最小类型或明确原因  
    Refactor Priority: P2
+   完成情况：GhostText 扩展已补 `GhostTextStorageRecord` 与 `writeGhostTextStorage(...)`，`tiptap-editor` 不再使用 `any` cast 直接写 `editor.storage.ghostText`。
+   验证方式：`npm run lint`、`npm run build`、全量 `npm run test`。
 
 #### 低风险 / P2-P3
 
@@ -295,6 +312,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 低  
    Recommendation: 合并为内部 `clear()`  
    Refactor Priority: P2
+   完成情况：`useStreamTask` 已将 `cancel/reset` 的重复清理路径收敛为内部共享 `clearState()`，对外行为保持不变。
+   验证方式：`src/shared/lib/use-stream-task.test.ts` 与全量 `npm run test`。
 
 2. **来源：代码冗余检测 4**  
    Finding: 无增益类型别名 `RewritePreviewResult`  
@@ -302,6 +321,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 低  
    Recommendation: 直接使用 `RewritePreviewResponse`  
    Refactor Priority: P3
+   完成情况：`RewritePreviewResult` 已删除，消费方统一改为直接使用 generated contract 类型 `RewritePreviewResponse`。
+   验证方式：`npm run lint`、`npm run build`、全量 `npm run test`。
 
 3. **来源：代码冗余检测 5**  
    Finding: 无增益类型别名 `ApplyRefineInput`  
@@ -309,6 +330,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 低  
    Recommendation: 统一为 `ApplyRefineAssetInput`  
    Refactor Priority: P3
+   完成情况：`ApplyRefineInput` 已删除，资产控制器等消费方统一回到 `ApplyRefineAssetInput`。
+   验证方式：`npm run lint`、`npm run build`、全量 `npm run test`。
 
 4. **来源：代码冗余检测 7**  
    Finding: `@xyflow/react` 未使用  
@@ -316,6 +339,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 低  
    Recommendation: 移除依赖或注明保留原因  
    Refactor Priority: P3
+   完成情况：`@xyflow/react` 已从 `frontend/package.json` 与 `package-lock.json` 中移除，连带无用的 `d3` 类型与 `zustand` 依赖树已清理。
+   验证方式：`npm run build`、`npm run test`。
 
 5. **来源：性能优化审查 5**  
    Finding: 未写章节计算 `O(规划×已写)`  
@@ -323,6 +348,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 先构建 ordinal `Set`  
    Refactor Priority: P2
+   完成情况：`useOutlinePlan()` 已改为先构建 `writtenOrdinals` 集合，再推导 `unwrittenPlannedChapters`，避免对每个 planned chapter 重复遍历已写章节列表。
+   验证方式：`src/features/projects/authoring-data.test.tsx` 新增稀疏 ordinal 回归场景，并通过全量 `npm run test`。
 
 6. **来源：代码规范检查 3**  
    Finding: 文件含 `BOM`  
@@ -331,6 +358,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: 格式一致性  
    Recommendation: 去 `BOM`  
    Refactor Priority: P3
+   完成情况：当前 HEAD 中 `frontend/src/pages/project-workbench-page.tsx` 文件头已无 `BOM`，本阶段按“已满足”回写，不额外制造无效代码改动。
+   验证方式：`xxd -g 1 -l 4 frontend/src/pages/project-workbench-page.tsx`。
 
 7. **来源：代码规范检查 6**  
    Finding: 硬编码 slate 颜色绕过语义 token  
@@ -339,6 +368,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: `AGENTS 5.6`  
    Recommendation: 用 `muted-foreground` 等语义 token  
    Refactor Priority: P3
+   完成情况：写作页草稿提示文案的硬编码 `text-slate-300` 已替换为语义 token `text-muted-foreground`。
+   验证方式：`npm run lint`、`npm run build`。
 
 8. **来源：代码规范检查 8**  
    Finding: `useToast` lint 压制无明确理由  
@@ -347,6 +378,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: `AGENTS 5.7`  
    Recommendation: 写明原因或重构导出结构  
    Refactor Priority: P3
+   完成情况：`useToast` 继续保留与 Provider 同文件导出，但已补充局部注释说明 react-refresh 例外原因，不再是无理由压制。
+   验证方式：`npm run lint`、`npm run build`。
 
 ## Phase 3｜后端核心用例、Handler 与数据链路修复
 
