@@ -764,6 +764,28 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
 - 质量门不是占位声明，而是能直接决定是否允许后续整改收口的真实门槛。
 - 共享协议边界、契约生成链路和最终验收口径在文档中清晰一致。
 
+### 完成产出
+
+- `backend/cmd/contractgen` 已新增 `prompt_profile` 相关枚举值 / schema 常量导出，重新生成后的 `frontend/src/shared/api/generated/contracts.ts` 可直接提供 `guidedAudienceValues`、`targetLengthValues`、`narrativePovValues`、`romanceLevelValues`、`commercializationPriorityValues` 及对应 schema。
+- `frontend/src/shared/api/prompt-profile.ts` 已退化为薄兼容层：本地反射提取逻辑已移除，仅保留 `createEmptyPromptProfile()`、`normalizePromptProfile()`、`splitPromptProfileList()` 和 generated contracts 的直接 re-export。
+- `frontend` 已建立最小 Playwright mocked smoke 基线：新增 `playwright.config.ts` 与 `e2e/home-page.smoke.spec.ts`，覆盖首页仪表盘加载与新建项目入口可达；`vite.config.ts` 也已把 `e2e/**` 从 Vitest 收集范围排除。
+- `frontend/eslint.config.js` 已将 `react-refresh/only-export-components` 升级为 `error`，`toast` 相关 hook/provider 已拆分为独立模块，不再依赖局部 lint disable 维持 zero-warning。
+- `backend/internal/contracts/httpdto/shared.go` 已为导出 DTO、input、response 和别名补齐 GoDoc；`frontend/README.md` 也已同步更新为真实的 mocked smoke 基线与契约生成现状说明。
+
+### 验收结果
+
+- 前端围绕 `prompt-profile` 的重复真相源已收回：枚举值与 schema 常量来自 generated contracts，本地 facade 只承担默认值和宽容归一化职责。
+- zero-warning 质量门已变成真实门槛：ESLint 不再依赖 `warn` 级规则存活，Vitest 与 Playwright 的测试收集边界也已拆开，不会再互相污染。
+- E2E 不再停留在脚本占位：`npm run test:e2e` 现在可直接拉起前端并在 mocked API 下完成 smoke 断言。
+- 共享协议边界和文档说明已一致：后端 DTO 补齐 GoDoc，前端 README 明确说明 generated contracts 与 mocked smoke baseline 的职责。
+
+### 完成状态
+
+- 状态：`已完成（2026-04-01）`
+- 后端验证：`go test ./...`、`go vet ./...`、`go run ./cmd/contractgen`
+- 前端验证：`npm run lint`、`npm run test`、`npm run build`、`npx playwright install chromium`、`npm run test:e2e`
+- 验证结果：后端全量测试通过，`go vet` 通过，contracts 重新生成完成；前端 lint 通过，全量 `34` 个测试文件、`125` 个测试全部通过，前端构建通过；Playwright mocked smoke `1` 个用例通过。
+
 ### 纳入问题清单
 
 #### 高风险 / P0
@@ -775,6 +797,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: `AGENTS 5.1`  
    Recommendation: 改为 `error` 或消除触发点  
    Refactor Priority: P0
+   完成情况：`frontend/eslint.config.js` 中 `react-refresh/only-export-components` 已从 `warn` 调整为 `error`；原先依赖局部 disable 的 `toast` hook/provider 也已拆分为 `toast.tsx`、`toast-context.ts`、`use-toast.ts`，使 zero-warning 不再依赖规则降级。
+   验证方式：`cd frontend && npm run lint`。
 
 2. **来源：代码规范检查 9**  
    Finding: 共享 DTO 导出类型缺 GoDoc  
@@ -783,6 +807,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Rule Violated: `AGENTS 6.5`  
    Recommendation: 给导出 DTO 分组补 GoDoc  
    Refactor Priority: P0
+   完成情况：`backend/internal/contracts/httpdto/shared.go` 中所有导出 DTO / input / response / alias 均已补齐 GoDoc，说明各自的 HTTP 职责与使用边界。
+   验证方式：`go test ./...`、`go vet ./...`。
 
 #### 中风险 / P1
 
@@ -792,6 +818,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 直接消费 generated schema/枚举  
    Refactor Priority: P1
+   完成情况：`backend/cmd/contractgen` 已生成 `prompt_profile` 相关枚举值 / schema 常量，`frontend/src/shared/api/prompt-profile.ts` 已改为直接 re-export generated contracts，并移除从 union schema 反射提取枚举值的本地逻辑。
+   验证方式：`go run ./cmd/contractgen`、`cd frontend && npm run test -- src/shared/api/prompt-profile.test.ts`、`cd frontend && npm run test`。
 
 2. **来源：代码冗余检测 8**  
    Finding: `@playwright/test + test:e2e` 仅预留，未落地资产  
@@ -799,6 +827,8 @@ InkMuse 当前仓库采用父仓库 + 子模块协作方式，`frontend/` 与 `b
    Severity: 中  
    Recommendation: 补齐配置和用例，或删除脚本依赖  
    Refactor Priority: P2
+   完成情况：前端已新增 `playwright.config.ts` 与 `e2e/home-page.smoke.spec.ts`，使用浏览器侧 API route mocking 覆盖首页仪表盘 smoke path；`frontend/README.md` 也已补充首次安装浏览器和执行方式。
+   验证方式：`cd frontend && npx playwright install chromium`、`cd frontend && npm run test:e2e`。
 
 ## 收口说明
 
