@@ -3,6 +3,7 @@
 .omc/
 .omx/
 .trae
+.worktrees/
 node_modules/
 
 # 系统文件
